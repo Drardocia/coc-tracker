@@ -90,6 +90,10 @@ details.set>summary{color:var(--mu);font-weight:600}
 input.nm[data-id]{border-style:dashed;border-color:var(--ac);width:100%;max-width:280px}
 .empty{padding:36px 12px;line-height:1.6}
 @media(max-width:560px){.uright{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%}.ucd{font-size:20px}.frow .uright{width:auto}}
+/* --- softer highlights --- */
+.tab.on{background:var(--card);color:var(--tx);border:2px solid var(--ac);font-weight:600;padding:8px 15px}
+.acts .btn.pri{background:transparent;color:var(--tx);border-color:var(--bd)}
+.acts .btn.pri:hover{border-color:var(--ac)}
 </style>
 </head>
 <body>
@@ -211,7 +215,7 @@ function rows(list,showAcc){
     const unk=!(S.names[u.id]||N[u.id]);
     const name=u.m?esc(u.name):unk?`<input class="nm" data-id="${u.id}" placeholder="Unknown ID ${u.id} \u2013 type a name" title="Type the name once; it is remembered">`:esc(nameOf(u.id,u.sec));
     const tags=[`<span class="pill">${esc(SEC[u.sec]||u.sec)}</span>`,u.lvl!=null?`<span class="pill">Lv ${u.lvl} \u2192 ${u.lvl+1}</span>`:'',u.m?'<span class="pill">manual</span>':'',u.disc?`<span class="pill">\u2212${u.disc}%</span>`:'',u.saved>6e4?`<span class="pill">\u2697\ufe0f \u2212${fmt(u.saved)}</span>`:'',u.helped?'<span class="pill">helper working</span>':''].join('');
-    const hb=(()=>{const k=hk(u),x=S.accounts[u.tag];return k&&left>0&&x&&hready(x,k,now)&&!u.helped?`<button class="btn" data-help="${k}" data-key="${esc(u.uid||u.id)}" data-acc="${esc(u.tag)}" title="Assign ${HN[k]}">${k==='app'?'\ud83d\udd28':'\ud83e\uddea'}</button>`:''})();
+    const hb=(()=>{const k=hk(u),x=S.accounts[u.tag];if(!k||left<=0||!x||u.helped)return '';const nm=k==='app'?'\ud83d\udd28 Apprentice':'\ud83e\uddea Lab Assistant';return hready(x,k,now)?`<button class="btn" data-help="${k}" data-key="${esc(u.uid||u.id)}" data-acc="${esc(u.tag)}" title="Assign ${HN[k]} to this upgrade for 1 hour">${nm}</button>`:`<button class="btn" disabled title="${HN[k]} is on cooldown">${nm} \u00b7 ${fmt(hlast(x,k)+HCD[k]-now)}</button>`})();
     const del=u.m?`<button class="btn" title="Remove" data-del="${u.id}" data-acc="${esc(u.tag)}">\u2715</button>`:'';
     return `<div class="urow"><div class="umain"><div class="uname">${showAcc?`<span class="uacc">${esc(u.acc)}</span> \u00b7 `:''}${name}${u.cnt>1?` \u00d7${u.cnt}`:''}</div><div class="utags">${tags}</div><div class="bar"><i style="width:${pct}%"></i></div></div><div class="uright"><div class="cd ucd ${cls}" data-end="${u.end}">${fmt(left)}</div><div class="meta">${fd(u.end)}${u.saved>6e4?` \u00b7 was ${fd(u.end0)}`:''}</div><div class="uact">${hb}${del}</div></div></div>`}).join('')+'</div>';
 }
