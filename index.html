@@ -220,12 +220,22 @@ function rows(list,showAcc){
     return `<div class="urow"><div class="umain"><div class="uname">${showAcc?`<span class="uacc">${esc(u.acc)}</span> \u00b7 `:''}${name}${u.cnt>1?` \u00d7${u.cnt}`:''}</div><div class="utags">${tags}</div><div class="bar"><i style="width:${pct}%"></i></div></div><div class="uright"><div class="cd ucd ${cls}" data-end="${u.end}">${fmt(left)}</div><div class="meta">${fd(u.end)}${u.saved>6e4?` \u00b7 was ${fd(u.end0)}`:''}</div><div class="uact">${hb}${del}</div></div></div>`}).join('')+'</div>';
 }
 
+const TAGS={buildings:'hv',heroes:'hero',buildings2:'bb',units:'lab',spells:'lab',siege_machines:'lab',pets:'pet',equipment:'eq'};
+function todayText(now=Date.now()){
+  const d0=new Date(now);d0.setHours(0,0,0,0);const e=+d0+864e5-1;
+  const accs=Object.values(S.accounts).filter(a=>S.sel==='all'?accOk(a.tag):a.tag===S.sel);
+  const items=accs.flatMap(a=>U(a).filter(u=>u.end>now&&u.end<=e).map(u=>({t:u.end,n:a.label||a.tag,k:TAGS[u.sec]||'hv'}))).sort((x,y)=>x.t-y.t);
+  const ln=i=>{const d=new Date(i.t);return `${d.getHours()%12||12}:${String(d.getMinutes()).padStart(2,'0')} "${i.n}"(${i.k})`};
+  const am=items.filter(i=>new Date(i.t).getHours()<12).map(ln),pm=items.filter(i=>new Date(i.t).getHours()>=12).map(ln);
+  const parts=[];if(am.length)parts.push('AM\n\n'+am.join('\n'));if(pm.length)parts.push('PM\n\n'+pm.join('\n'));
+  return parts.join('\n\n\n'+'_'.repeat(28)+'\n\n')}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){try{const x=document.createElement('textarea');x.value=t;x.style.cssText='position:fixed;opacity:0';document.body.appendChild(x);x.select();const ok=document.execCommand('copy');x.remove();return ok}catch(e2){return false}}}
 function render(){sync();
   const accs=Object.values(S.accounts), tabs=document.getElementById('tabs'), view=document.getElementById('view');
   if(!accs.length){tabs.innerHTML='';view.innerHTML='<div class="card empty">No accounts yet. Load an export file to start tracking.</div>';return}
   if(S.sel!=='all'&&!S.accounts[S.sel])S.sel='all';
   tabs.innerHTML=`<button class="tab ${S.sel==='all'?'on':''}" data-t="all">All accounts<small>${accs.length}</small>${Object.values(S.hist||{}).some(h=>!h.seen)?`<small style="font-weight:700">!${Object.values(S.hist).filter(h=>!h.seen).length}</small>`:''}</button>`+accs.map(a=>`<button class="tab ${S.sel===a.tag?'on':''}" data-t="${esc(a.tag)}">${esc(a.label)}${a.label!==a.tag?`<small>${esc(a.tag)}</small>`:''}<small>· ${U(a).length}</small></button>`).join('');
-  tabs.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.sel=b.dataset.t;save();render()});const hd=document.createElement('button');hd.className='btn';hd.textContent=S.hideDone?'Show finished':'Hide finished';hd.onclick=()=>{S.hideDone=!S.hideDone;save();render()};tabs.appendChild(hd);const fs=document.createElement('select');fs.innerHTML='<option value="today">Finishing today</option><option value="all">All</option>';fs.value=P.fday;fs.title='Filter by finish day';fs.style.cssText='font:inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)';fs.onchange=()=>{P.fday=fs.value;savePref();render()};tabs.appendChild(fs);
+  tabs.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.sel=b.dataset.t;save();render()});const hd=document.createElement('button');hd.className='btn';hd.textContent=S.hideDone?'Show finished':'Hide finished';hd.onclick=()=>{S.hideDone=!S.hideDone;save();render()};tabs.appendChild(hd);const fs=document.createElement('select');fs.innerHTML='<option value="today">Finishing today</option><option value="all">All</option>';fs.value=P.fday;fs.title='Filter by finish day';fs.style.cssText='font:inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)';fs.onchange=()=>{P.fday=fs.value;savePref();render()};tabs.appendChild(fs);const cb=document.createElement('button');const cl='\ud83d\udccb Copy today\u2019s upgrades';cb.className='btn';cb.textContent=cl;cb.onclick=async()=>{const t=todayText();let m;if(!t)m='Nothing finishes today';else m=(await copyText(t))?'Copied \u2713':'Copy failed';cb.textContent=m;setTimeout(()=>{cb.textContent=cl},2000)};tabs.appendChild(cb);
   const now=Date.now();
   if(S.sel==='all'){
     const all=accs.flatMap(a=>U(a).map(u=>({...u,acc:a.label,tag:a.tag}))).filter(u=>u.end>Date.now()&&accOk(u.tag)).sort((x,y)=>x.end-y.end);
