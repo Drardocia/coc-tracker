@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CoC Upgrade Tracker</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1f1d18;--mu:#6d6859;--bd:#e2ddd0;--ac:#c8541a;--ok:#2e7d32;--wa:#b26a00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17150f;--card:#221f17;--tx:#f1ede1;--mu:#a29c88;--bd:#38342a;--ac:#f08a4b;--ok:#66bb6a;--wa:#ffb74d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17150f;--card:#221f17;--tx:#f1ede1;--mu:#a29c88;--bd:#38342a;--ac:#f08a4b;--ok:#66bb6a;--wa:#ffb74d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mu);margin:0 0 18px}
+.drop{border:2px dashed var(--bd);border-radius:12px;padding:22px;text-align:center;background:var(--card);cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 8%,var(--card))}
+.drop b{color:var(--ac)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.tab{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer;font:inherit}
+.tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.tab small{opacity:.8;margin-left:6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.head h2{margin:0;font-size:18px}
+.meta{color:var(--mu);font-size:13px}
+.btn{border:1px solid var(--bd);background:transparent;color:var(--tx);border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;font-size:13px}
+.btn:hover{border-color:var(--ac)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.stat{border:1px solid var(--bd);border-radius:10px;padding:10px}
+.stat .n{font-size:20px;font-weight:600}
+.stat .l{font-size:12px;color:var(--mu)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd);font-size:14px;vertical-align:middle}
+th{font-size:12px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.cd{font-variant-numeric:tabular-nums;font-weight:600}
+.done{color:var(--ok)}
+.soon{color:var(--wa)}
+.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--bd);color:var(--mu)}
+.bar{height:5px;border-radius:3px;background:var(--bd);margin-top:4px;overflow:hidden;width:120px}
+.bar i{display:block;height:100%;background:var(--ac)}
+input.nm{font:inherit;background:transparent;color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:2px 6px;width:150px}
+.empty{color:var(--mu);text-align:center;padding:24px}
+.err{color:#c62828;margin-top:8px;font-size:13px}.form{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.form input,.form select{font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}.btn.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><h1>⚔️ CoC Upgrade Tracker</h1>
+  <p class="sub">Load the export file from Clash of Clans (Settings → More Settings → Data Export). Add as many accounts as you like.</p></div></div>
+
+  <label class="drop" id="drop">
+    <input type="file" id="file" accept=".json,application/json,.txt" multiple hidden>
+    <div>Drop export <b>.json</b> files here, or <b>click to choose</b> (multiple allowed)</div>
+    <div class="meta">Or paste the JSON text below</div>
+  </label>
+  <div style="margin-top:8px;display:flex;gap:8px">
+    <input id="paste" placeholder="Paste export JSON here…" style="flex:1;font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)">
+    <button class="btn" id="addPaste">Add</button>
+  </div>
+  <div class="err" id="err"></div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="view"></div>
+  <div class="card" style="margin-top:24px"><b>Cloud sync</b><div class="meta">Use the same sync code on every device (PC, phone) and they stay in step automatically. Keep the code private: anyone with it can read and change your data.</div><div class="form"><input id="syc" placeholder="Sync code (20+ characters)" style="flex:1;min-width:220px"><button class="btn" id="syg">Generate code</button><button class="btn pri" id="syb">Connect</button></div><div class="meta" id="sys" style="margin-top:8px">Not connected.</div></div>
+  <div class="card" style="margin-top:24px"><b>Backup and restore</b><div class="meta">Everything is saved in this browser automatically. Moving to the standalone .html file or another device? Copy your backup here, then paste it into the same box there and press Restore.</div><div class="form"><button class="btn" id="bk">Show backup</button><button class="btn" id="dlb">Download backup file</button><button class="btn" id="rs">Restore from box</button></div><textarea id="bt" rows="4" style="width:100%;margin-top:8px;display:none;font:12px monospace;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px"></textarea><div class="meta" id="bm" style="margin-top:6px"></div></div>
+</div>
+
+<script>
+const KEY='coc-tracker-v1';
+let S={accounts:{},names:{},sel:'all'};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{S._rev=Date.now();localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(window.__sync)window.__sync()};
+window.__getS=()=>S;
+window.__apply=r=>{const keep={sel:S.sel,allTab:S.allTab,hideDone:S.hideDone};S=Object.assign({accounts:{},names:{}},r,keep);if(S.sel!=='all'&&!S.accounts[S.sel])S.sel='all';try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()};
+
+// Best-effort ID names; unknown IDs can be renamed in the table.
+const N={
+1000000:'Army Camp',1000001:'Town Hall',1000002:'Elixir Collector',1000003:'Elixir Storage',1000004:'Gold Mine',1000005:'Gold Storage',1000006:'Barracks',1000007:'Laboratory',1000008:'Cannon',1000009:'Archer Tower',1000010:'Wall',1000011:'Wizard Tower',1000012:'Air Defense',1000013:'Mortar',1000014:'Clan Castle',1000015:'Builder’s Hut',1000021:'X-Bow',1000027:'Inferno Tower',1000028:'Eagle Artillery',
+28000000:'Barbarian King',28000001:'Archer Queen',28000002:'Grand Warden',28000004:'Royal Champion',28000006:'Minion Prince',
+4000000:'Barbarian',4000001:'Archer',4000002:'Goblin',4000003:'Giant',4000004:'Wall Breaker',4000005:'Balloon',4000006:'Wizard',4000007:'Healer',4000008:'Dragon',4000009:'P.E.K.K.A',4000010:'Minion',4000011:'Hog Rider',4000012:'Valkyrie',4000013:'Golem',4000015:'Witch',4000017:'Lava Hound',4000022:'Bowler',4000023:'Baby Dragon',4000024:'Miner',4000053:'Yeti',4000058:'Ice Golem',
+4000051:'Wall Wrecker',4000052:'Battle Blimp',4000062:'Stone Slammer',4000075:'Siege Barracks',4000087:'Log Launcher',4000091:'Flame Flinger',4000092:'Battle Drill',
+26000000:'Lightning Spell',26000001:'Healing Spell',26000002:'Rage Spell',26000003:'Jump Spell',26000005:'Freeze Spell',26000009:'Poison Spell',26000010:'Earthquake Spell',26000011:'Haste Spell',26000016:'Clone Spell',26000017:'Skeleton Spell',26000028:'Bat Spell',
+73000000:'L.A.S.S.I',73000001:'Electro Owl',73000002:'Mighty Yak',73000003:'Unicorn',73000004:'Frosty',73000005:'Diggy',73000006:'Poison Lizard',73000007:'Phoenix',73000008:'Spirit Fox',73000009:'Angry Jelly'};
+const SEC={buildings:'Home village',traps:'Traps',decos:'Decorations',obstacles:'Obstacles',units:'Troops',siege_machines:'Siege machines',spells:'Spells',heroes:'Heroes',pets:'Pets',equipment:'Equipment',skins:'Skins',buildings2:'Builder base',traps2:'Builder traps',units2:'Builder troops',heroes2:'Builder hero'};
+const KIND={buildings:'pot',heroes:'pot',units:'rpot',spells:'rpot',siege_machines:'rpot',pets:'ppot'};
+const PM={pot:{nm:'Builder potion',mult:10},rpot:{nm:'Research potion',mult:24},ppot:{nm:'Pet potion',mult:24},bite:{nm:'Builder Bite',mult:2},soup:{nm:'Study Soup',mult:4}};
+const HCD={app:24*36e5,lab:19*36e5},HN={app:'Builder\u2019s Apprentice',lab:'Lab Assistant'};
+const hk=u=>['buildings','heroes'].includes(u.sec)?'app':['units','spells','siege_machines'].includes(u.sec)?'lab':null;
+const hlast=(a,k)=>(a.helpers&&a.helpers[k]&&a.helpers[k].last)||0;
+const hready=(a,k,now)=>now>=hlast(a,k)+HCD[k];
+const hlvl=(a,k)=>(a.helpers&&a.helpers[k]&&a.helpers[k].lvl)||1;
+// Finish time = walk forward from the upgrade's reference time, burning work at 1x, or at the potion's speed while a potion window is active.
+const AFF={pot:['buildings','heroes'],bite:['buildings','heroes'],rpot:['units','spells','siege_machines'],ppot:['pets'],soup:['units','spells','siege_machines','pets']};
+function eff(u,a){let T=u.start,W=(u.end0??u.end)-T;if(!(W>0))return u.end0??u.end;const key=u.uid||u.id;
+  const ws=(a.potions||[]).filter(p=>p.end>T&&(p.target?p.target===key:(AFF[p.kind]||[]).includes(u.sec)));
+  if(!ws.length)return T+W;
+  const bp=[...new Set(ws.flatMap(p=>[Math.max(p.start,T),p.end]))].sort((x,y)=>x-y);
+  for(let i=0;i<bp.length;i++){const s=Math.max(bp[i],T);if(s>T){const nt=s-T;if(nt>=W)return T+W;W-=nt;T=s}
+    const e=bp[i+1];if(e==null)break;if(e<=T)continue;
+    const rate=1+ws.reduce((r,p)=>r+(p.start<=T&&p.end>=e?p.mult-1:0),0);
+    const cap=(e-T)*rate;if(cap>=W)return T+W/rate;W-=cap;T=e}
+  return T+W}
+const U=a=>[...a.ups,...(a.manual||[])].map(u=>{const b=u.end0??u.end,e=Math.round(eff(u,a));return {...u,end:e,end0:b,saved:b-e,helped:(a.potions||[]).some(p=>p.target&&p.target===(u.uid||u.id)&&p.end>Date.now())}});
+const fd=t=>{const d=new Date(t),n=new Date(),dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);return (dd===0?'Today':dd===1?'Tomorrow':dd===-1?'Yesterday':d.toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'}))+' · '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})};
+const LISTS={buildings:['Army Camp','Town Hall','Elixir Collector','Elixir Storage','Gold Mine','Gold Storage','Barracks','Laboratory','Cannon','Archer Tower','Wall','Wizard Tower','Air Defense','Mortar','Clan Castle','Builder’s Hut','Hidden Tesla','Spell Factory','X-Bow','Dark Elixir Drill','Dark Elixir Storage','Dark Barracks','Inferno Tower','Air Sweeper','Dark Spell Factory','Eagle Artillery','Bomb Tower','Workshop','B.O.B’s Hut','Scattershot','Pet House','Blacksmith','Hero Hall','Spell Tower','Monolith','Multi-Gear Tower','Sour Elixir Cauldron','Multi-Archer Tower','Ricochet Cannon','Revenge Tower','Firespitter','Helper Hut','Crafting Station','Super Wizard Tower'],heroes:['Barbarian King','Archer Queen','Minion Prince','Grand Warden','Royal Champion','Dragon Duke','Battle Machine','Battle Copter'],spells:['Lightning','Healing','Rage','Jump','Freeze','Clone','Invisibility','Recall','Revive','Totem','Poison','Earthquake','Haste','Skeleton','Bat','Overgrowth','Ice Block','Angry'].map(s=>s+' Spell'),pets:['L.A.S.S.I','Mighty Yak','Electro Owl','Unicorn','Phoenix','Poison Lizard','Diggy','Frosty','Spirit Fox','Angry Jelly','Sneezy','Greedy Raven']};
+function sync(){S.hist=S.hist||{};let ch=false;const now=Date.now();Object.values(S.accounts).forEach(a=>U(a).forEach(u=>{if(u.end>now)return;const k=a.tag+'|'+u.id+'|'+Math.round(u.end/6e4);if(!S.hist[k]){S.hist[k]={key:k,acc:a.tag,name:u.m?u.name:nameOf(u.id,u.sec),sec:u.sec,end:u.end,seen:false};ch=true}}));if(ch)save();return ch}
+const dur=s=>{let t=0;String(s).replace(/(\d+(?:\.\d+)?)\s*(d|h|m|s)/gi,(_,n,u)=>{t+={d:864e5,h:36e5,m:6e4,s:1e3}[u.toLowerCase()]*n});return t};
+const nameOf=(id,sec)=>S.names[id]||N[id]||`${SEC[sec]||sec} #${id}`;
+
+function parse(text,fname){
+  const j=JSON.parse(text);
+  if(!j||typeof j!=='object'||!j.timestamp)throw new Error('No "timestamp" found — is this a CoC export?');
+  const ts=j.timestamp*1000, ups=[];
+  for(const [sec,arr] of Object.entries(j)){
+    if(!Array.isArray(arr))continue;
+    for(const it of arr){
+      if(!it||typeof it!=='object'||it.data==null)continue;
+      const cnt=it.cnt||1;
+      if(it.timer>0) ups.push({id:it.data,sec,lvl:it.lvl||0,end:ts+it.timer*1000,total:it.timer*1000,start:ts,cnt});
+      else if(it.helper_timer>0 && it.helper_timer>0 && !it.timer) {/* helper cooldown only – ignored */}
+    }
+  }
+  const th=(j.buildings||[]).find(b=>b.data===1000001);
+  return {tag:j.tag||fname,label:S.accounts[j.tag]?.label||j.name||j.player_name||j.tag||fname,exported:ts,th:th?th.lvl:null,ups,file:fname,count:Object.values(j).filter(Array.isArray).reduce((a,b)=>a+b.length,0)};
+}
+function add(text,fname){try{const b=JSON.parse(text);if(b&&b.accounts&&!b.timestamp){restore(b);return}}catch(e){}
+  const a=parse(text,fname), old=S.accounts[a.tag];
+  if(old&&old.label)a.label=old.label;a.manual=((old&&old.manual)||[]).filter(m=>m.start>a.exported);
+  S.accounts[a.tag]=a; if(S.sel==='all'&&Object.keys(S.accounts).length===1)S.sel=a.tag; save(); render();
+}
+async function files(list){
+  const err=document.getElementById('err');err.textContent='';
+  for(const f of list){try{add(await f.text(),f.name)}catch(e){err.textContent+=`${f.name}: ${e.message}  `}}
+}
+const fi=document.getElementById('file'),dr=document.getElementById('drop');
+fi.onchange=()=>{files([...fi.files]);fi.value=''};
+['dragover','dragenter'].forEach(e=>dr.addEventListener(e,x=>{x.preventDefault();dr.classList.add('over')}));
+['dragleave','drop'].forEach(e=>dr.addEventListener(e,x=>{x.preventDefault();dr.classList.remove('over')}));
+dr.addEventListener('drop',x=>files([...x.dataTransfer.files]));
+document.getElementById('addPaste').onclick=()=>{const p=document.getElementById('paste'),err=document.getElementById('err');err.textContent='';try{add(p.value,'pasted');p.value=''}catch(e){err.textContent=e.message}};
+
+function fmt(ms){
+  if(ms<=0)return 'Done';
+  let s=Math.floor(ms/1000),d=Math.floor(s/86400);s%=86400;const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;
+  return [d?d+'d':'',d||h?h+'h':'',m+'m',d?'':String(s).padStart(2,'0')+'s'].filter(Boolean).join(' ');
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function rows(list,showAcc){
+  const now=Date.now();
+  return `<div class="scroll"><table><thead><tr>${showAcc?'<th>Account</th>':''}<th>Upgrade</th><th>Type</th><th>Level</th><th>Time left</th><th>Finishes</th><th></th></tr></thead><tbody>`+
+  list.filter(u=>!S.hideDone||u.end>now).map(u=>{const left=u.end-now,pct=Math.min(100,Math.max(0,(1-left/u.total)*100));
+    const cls=left<=0?'done':left<3600e3?'soon':'';
+    const unk=!(S.names[u.id]||N[u.id]);
+    return `<tr>${showAcc?`<td><b>${esc(u.acc)}</b>${u.acc!==u.tag?`<div class="meta">${esc(u.tag)}</div>`:''}</td>`:''}<td>${u.m?esc(u.name)+' <span class="pill">manual</span>'+(u.disc?' <span class="pill">−'+u.disc+'%</span>':''):unk?`<input class="nm" data-id="${u.id}" placeholder="Unknown ID ${u.id} – type a name" title="Type the name once; it is remembered">`:esc(nameOf(u.id,u.sec))}${u.cnt>1?` ×${u.cnt}`:''}</td><td><span class="pill">${esc(SEC[u.sec]||u.sec)}</span></td><td>${u.lvl==null?'—':u.lvl+' → '+(u.lvl+1)}</td>
+    <td><div class="cd ${cls}" data-end="${u.end}">${fmt(left)}</div><div class="bar"><i style="width:${pct}%"></i></div>${u.saved>6e4?` <span class="pill">⚗️ −${fmt(u.saved)}</span>`:''}${u.helped?' <span class="pill">helper working</span>':''}</td><td>${fd(u.end)}${u.saved>6e4?`<div class="meta">was ${fd(u.end0)}</div>`:''}</td><td style="white-space:nowrap">${(()=>{const k=hk(u),x=S.accounts[u.tag];return k&&left>0&&x&&hready(x,k,now)&&!u.helped?`<button class="btn" data-help="${k}" data-key="${esc(u.uid||u.id)}" data-acc="${esc(u.tag)}" title="Assign ${HN[k]}">${k==='app'?'🔨':'🧪'}</button> `:''})()}${u.m?`<button class="btn" title="Remove" data-del="${u.id}" data-acc="${esc(u.tag)}">✕</button>`:''}</td></tr>`}).join('')+`</tbody></table></div>`;
+}
+function render(){sync();
+  const accs=Object.values(S.accounts), tabs=document.getElementById('tabs'), view=document.getElementById('view');
+  if(!accs.length){tabs.innerHTML='';view.innerHTML='<div class="card empty">No accounts yet. Load an export file to start tracking.</div>';return}
+  if(S.sel!=='all'&&!S.accounts[S.sel])S.sel='all';
+  tabs.innerHTML=`<button class="tab ${S.sel==='all'?'on':''}" data-t="all">All accounts<small>${accs.length}</small>${Object.values(S.hist||{}).some(h=>!h.seen)?`<small style="font-weight:700">!${Object.values(S.hist).filter(h=>!h.seen).length}</small>`:''}</button>`+accs.map(a=>`<button class="tab ${S.sel===a.tag?'on':''}" data-t="${esc(a.tag)}">${esc(a.label)}${a.label!==a.tag?`<small>${esc(a.tag)}</small>`:''}<small>· ${U(a).length}</small></button>`).join('');
+  tabs.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.sel=b.dataset.t;save();render()});const hd=document.createElement('button');hd.className='btn';hd.textContent=S.hideDone?'Show finished':'Hide finished';hd.onclick=()=>{S.hideDone=!S.hideDone;save();render()};tabs.appendChild(hd);
+  const now=Date.now();
+  if(S.sel==='all'){
+    const all=accs.flatMap(a=>U(a).map(u=>({...u,acc:a.label,tag:a.tag}))).filter(u=>u.end>Date.now()).sort((x,y)=>x.end-y.end);
+    const next=all.find(u=>u.end>now);const hist=Object.values(S.hist||{}).sort((x,y)=>y.end-x.end),unseen=hist.filter(h=>!h.seen).length;
+    view.innerHTML=`<div class="card"><div class="head"><h2>Everything in progress</h2><span class="meta">${all.length} upgrades across ${accs.length} accounts</span></div>
+      <div class="stats"><div class="stat"><div class="n">${all.filter(u=>u.end>now).length}</div><div class="l">Running</div></div>
+      <div class="stat"><div class="n done">${hist.length}</div><div class="l">Finished (logged)</div></div>
+      <div class="stat"><div class="n">${next?fmt(next.end-now):'—'}</div><div class="l">Next finishes${next?' ('+esc(next.acc)+')':''}</div></div></div></div>
+      <div class="tabs" style="margin:0 0 12px"><button class="tab ${S.allTab!=='fin'?'on':''}" data-at="run">Running<small>${all.length}</small></button><button class="tab ${S.allTab==='fin'?'on':''}" data-at="fin">Finished<small>${hist.length}</small>${unseen?`<small style="font-weight:700">!${unseen}</small>`:''}</button></div>${S.allTab==='fin'?'':`<div class="card">${all.length?rows(all,true):'<div class="empty">No active upgrades found in these files.</div>'}</div>`}${S.allTab!=='fin'?'':`<div class="card"><div class="head"><h2>Finished upgrades</h2>${unseen?`<button class="btn" id="seenall">Mark all as seen (${unseen})</button>`:''}</div>${hist.length?`<div class="scroll"><table><thead><tr><th></th><th>Account</th><th>Upgrade</th><th>Finished</th></tr></thead><tbody>${hist.slice(0,150).map(h=>`<tr data-seen="${esc(h.key)}" style="cursor:pointer;${h.seen?'':'font-weight:600'}"><td style="width:28px;color:var(--ac);font-weight:700">${h.seen?'':'!'}</td><td>${esc(S.accounts[h.acc]?.label||h.acc)}</td><td>${esc(h.name)} <span class="pill">${esc(SEC[h.sec]||h.sec)}</span></td><td>${new Date(h.end).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td></tr>`).join('')}</tbody></table></div><p class="meta">Rows with ! are new. Click a row to mark it seen.</p>`:'<div class="empty">Nothing has finished yet.</div>'}</div>`}`;
+  }else{
+    const a=S.accounts[S.sel], list=U(a).map(u=>({...u,tag:a.tag})).sort((x,y)=>x.end-y.end), run=list.filter(u=>u.end>now);
+    view.innerHTML=`<div class="card"><div class="head"><div><h2><input class="nm" id="lbl" value="${a.label===a.tag?'':esc(a.label)}" placeholder="Enter IGN" style="font-size:18px;font-weight:600;width:220px"></h2>
+      <div class="meta"><b>${esc(a.tag)}</b>${a.label===a.tag?' · type your IGN above':''}${a.th?' · Town Hall '+a.th:''} · exported ${new Date(a.exported).toLocaleString()} (${fmt(Date.now()-a.exported)} ago) · ${esc(a.file)}</div></div>
+      <select id="pq" title="How many potions to use">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}">×${n}</option>`).join('')}</select><button class="btn pri" id="pot" title="Builders work 10x faster for 1h: cuts 9h from running building and hero upgrades">⚗️ Builder potion</button><button class="btn pri" id="rpot" title="Laboratory works 24x faster for 1h: cuts 23h from running troop, spell and siege research">🔬 Research potion</button><button class="btn pri" id="ppot" title="Pet House works 24x faster for 1h: cuts 23h from running pet upgrades">🐾 Pet potion</button><button class="btn" id="bite" title="Builder Bite: builders work 2x for 1h (not the Apprentice)">🍪 Builder Bite</button><button class="btn" id="soup" title="Study Soup: Laboratory and Pet House work 4x for 1h (not the Lab Assistant)">🍜 Study Soup</button><button class="btn" id="rm">Remove account</button></div>
+      <div style="margin-top:10px">${Object.keys(PM).map(k=>{const w=(a.potions||[]).filter(p=>p.kind===k&&p.end>now);return w.length?`<span class="pill" style="margin-right:6px">⚗️ ${PM[k].nm} ×${w.length} · <span class="cd" data-end="${Math.max(...w.map(p=>p.end))}">${fmt(Math.max(...w.map(p=>p.end))-now)}</span> left <button class="btn" style="padding:0 6px" data-undo="${k}" title="Undo the last potion">✕</button></span>`:''}).join('')}</div><div class="meta" style="margin-top:10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">Helpers:
+      <label>Apprentice lvl <input type="number" class="nm" id="hl-app" min="1" max="30" value="${hlvl(a,'app')}" style="width:56px"></label>
+      <label>Lab Assistant lvl <input type="number" class="nm" id="hl-lab" min="1" max="30" value="${hlvl(a,'lab')}" style="width:56px"></label>
+      ${['app','lab'].map(k=>{const w=(a.potions||[]).filter(p=>p.kind===k&&p.end>now);return w.length?`<span class="pill">${HN[k]} working · <span class="cd" data-end="${w[0].end}">${fmt(w[0].end-now)}</span> <button class="btn" style="padding:0 6px" data-undo="${k}" title="Undo">✕</button></span>`:hready(a,k,now)?`<span class="pill">${HN[k]} ready</span>`:`<span class="pill">${HN[k]} cooldown · <span class="cd" data-end="${hlast(a,k)+HCD[k]}">${fmt(hlast(a,k)+HCD[k]-now)}</span></span>`}).join('')}
+      </div><div class="meta">Tap 🔨 or 🧪 on a running upgrade to assign a helper to it.</div><div class="stats"><div class="stat"><div class="n">${run.length}</div><div class="l">Running</div></div>
+      <div class="stat"><div class="n done">${list.length-run.length}</div><div class="l">Finished since export</div></div>
+      <div class="stat"><div class="n">${run[0]?fmt(run[0].end-now):'—'}</div><div class="l">Next finishes</div></div>
+      <div class="stat"><div class="n">${run.length?fmt(run[run.length-1].end-now):'—'}</div><div class="l">All done in</div></div></div></div>
+      <div class="card"><b>Start a new upgrade</b><div class="meta">Log it here the moment you start it in-game. It counts down live; a fresh export later replaces it automatically.</div><div class="form"><input id="mn" list="dl" placeholder="What? e.g. Archer Queen" style="flex:1;min-width:160px"><select id="mk"><option value="buildings">Building</option><option value="heroes">Hero</option><option value="spells">Spell</option><option value="pets">Pet</option></select><input id="md" placeholder="Normal time e.g. 5d 3h 20m" style="width:200px"><select id="mdc" title="Upgrade discount"><option value="0">0% discount</option><option value="10">10% discount</option><option value="15">15% discount</option><option value="20">20% discount</option><option value="58">58% discount</option><option value="60">60% discount</option></select><input id="mo" placeholder="Started ago (opt.) 10m" style="width:170px"><button class="btn pri" id="madd">Start timer</button></div><datalist id="dl"></datalist><div class="meta" id="mp" style="margin-top:8px">Actual time after discount: —</div><div class="err" id="merr"></div></div>
+      <div class="card">${list.length?rows(list,false):'<div class="empty">No active upgrades in this export.</div>'}</div>
+      <p class="meta">Re-import a newer export for this account to refresh it — it replaces the old data.</p>`;
+    document.getElementById('lbl').onchange=e=>{a.label=e.target.value||a.tag;save();render()};
+    const rm=document.getElementById('rm');let armed=false,tm;rm.onclick=()=>{if(!armed){armed=true;rm.textContent='Click again to confirm';rm.style.borderColor='#c62828';rm.style.color='#c62828';tm=setTimeout(()=>{armed=false;rm.textContent='Remove account';rm.style.borderColor='';rm.style.color=''},3000)}else{clearTimeout(tm);delete S.accounts[a.tag];S.sel='all';save();render()}};
+  }
+  view.querySelectorAll('input.nm[data-id]').forEach(i=>i.onchange=()=>{S.names[i.dataset.id]=i.value.trim()||undefined;save();render()});
+  view.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const x=S.accounts[b.dataset.acc];x.manual=(x.manual||[]).filter(m=>m.id!==b.dataset.del);save();render()});
+  view.querySelectorAll('[data-seen]').forEach(r=>r.onclick=()=>{const h=S.hist[r.dataset.seen];if(h){h.seen=true;save();render()}});
+  view.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{S.allTab=b.dataset.at;save();render()});
+  Object.keys(PM).forEach(id=>{const b=document.getElementById(id);if(!b)return;b.onclick=()=>{const x=S.accounts[S.sel],now=Date.now();const q=Math.max(1,+(document.getElementById('pq')||{}).value||1);x.potions=x.potions||[];let st=Math.max(now,...x.potions.filter(p=>p.kind===id).map(p=>p.end));for(let i=0;i<q;i++){x.potions.push({id:'p'+now+'_'+i+Math.random().toString(36).slice(2,5),kind:id,start:st,end:st+36e5,mult:PM[id].mult});st+=36e5}save();render();const e=document.getElementById('merr');if(e){e.style.color='var(--ok)';e.textContent=q+' \u00d7 '+PM[id].nm+' stacked. Finish times updated.'}}});
+  document.querySelectorAll('[data-undo]').forEach(b=>b.onclick=()=>{const x=S.accounts[S.sel],k=b.dataset.undo,w=(x.potions||[]).filter(p=>p.kind===k&&p.end>Date.now()).sort((m,n)=>n.end-m.end)[0];x.potions=(x.potions||[]).filter(p=>p!==w);if((k==='app'||k==='lab')&&x.helpers&&x.helpers[k])x.helpers[k].last=0;save();render()});
+  view.querySelectorAll('[data-help]').forEach(b=>b.onclick=()=>{const x=S.accounts[b.dataset.acc],k=b.dataset.help,now=Date.now();if(!x||!hready(x,k,now))return;x.helpers=x.helpers||{};const h=x.helpers[k]=x.helpers[k]||{lvl:1};h.last=now;(x.potions=x.potions||[]).push({id:'h'+now+k,kind:k,target:b.dataset.key,start:now,end:now+36e5,mult:1+(+h.lvl||1)});save();render()});
+  ['app','lab'].forEach(k=>{const i=document.getElementById('hl-'+k);if(i)i.onchange=()=>{const x=S.accounts[S.sel];x.helpers=x.helpers||{};(x.helpers[k]=x.helpers[k]||{}).lvl=Math.max(1,+i.value||1);save();render()}});
+  const sa=document.getElementById('seenall');if(sa)sa.onclick=()=>{Object.values(S.hist).forEach(h=>h.seen=true);save();render()};
+  const kk=document.getElementById('mk');
+  if(kk){const dl=document.getElementById('dl'),mp=document.getElementById('mp'),md=document.getElementById('md'),dcs=document.getElementById('mdc');
+    const fill=()=>{dl.innerHTML=[...new Set([...(LISTS[kk.value]||[]),...accs.flatMap(x=>(x.manual||[]).filter(m=>m.sec===kk.value).map(m=>m.name))])].map(n=>`<option value="${esc(n)}">`).join('')};
+    const pv=()=>{const d=dur(md.value);mp.textContent='Actual time after discount: '+(d?fmt(Math.round(d*(1-dcs.value/100))):'—')};
+    kk.onchange=fill;md.oninput=pv;dcs.onchange=pv;fill();
+    ['mn','md','mo'].forEach(i=>document.getElementById(i).onkeydown=e=>{if(e.key==='Enter')document.getElementById('madd').click()})}
+  const ma=document.getElementById('madd');
+  if(ma)ma.onclick=()=>{const a=S.accounts[S.sel],v=id=>document.getElementById(id).value.trim(),er=document.getElementById('merr'),name=v('mn'),d=dur(v('md')),ago=dur(v('mo'));
+    if(!name){er.textContent='Enter what you are upgrading.';return}
+    if(!d){er.textContent='Enter the time like 5d 3h 20m (d, h, m, s).';return}
+    const dc=+document.getElementById('mdc').value,st=Date.now()-ago,eff=Math.round(d*(1-dc/100));
+    (a.manual=a.manual||[]).push({id:'m'+st+Math.random().toString(36).slice(2,6),m:true,name,sec:v('mk'),lvl:null,disc:dc,start:st,end:st+eff,total:eff,cnt:1});save();render()};
+}
+setInterval(()=>{if(sync()&&!document.activeElement.matches('input,select'))render();const now=Date.now();document.querySelectorAll('.cd[data-end]').forEach(el=>{const l=el.dataset.end-now;el.textContent=fmt(l);el.className='cd '+(l<=0?'done':l<3600e3?'soon':'')})},1000);
+function restore(b){S.accounts=Object.assign({},S.accounts,b.accounts||{});S.names=Object.assign({},S.names,b.names||{});S.hist=Object.assign({},S.hist||{},b.hist||{});if(b.sel&&S.accounts[b.sel])S.sel=b.sel;save();render()}
+const bt=document.getElementById('bt'),bm=document.getElementById('bm');
+document.getElementById('bk').onclick=()=>{bt.style.display='block';bt.value=JSON.stringify(S);bt.select();bm.textContent='Select all, copy this text, and paste it into the same box in your other copy, then press Restore.'};
+document.getElementById('dlb').onclick=()=>{try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='coc-tracker-backup.json';a.click();bm.textContent='If nothing downloaded (some embedded views block it), use Show backup instead. A backup file can be dropped into the import area to restore it.'}catch(e){bm.textContent='Download is blocked here. Use Show backup instead.'}};
+document.getElementById('rs').onclick=()=>{bt.style.display='block';const t=bt.value.trim();if(!t){bm.textContent='Paste your backup text in the box first, then press Restore.';return}try{const j=JSON.parse(t);if(!j.accounts)throw 0;restore(j);bm.textContent='Restored. Existing accounts with the same tag were replaced by the backup.'}catch(e){bm.textContent='That does not look like a backup.'}};
+render();
+</script>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getFirestore,doc,setDoc,onSnapshot} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+// >>> PASTE YOUR FIREBASE CONFIG HERE (Firebase console > Project settings > Your apps > Web app) <<<
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyDe6i0KcXDhyPMZ-dbEefkzyjDwxAJ18Wg",
+  authDomain:"cocupgradetimer.firebaseapp.com",
+  projectId:"cocupgradetimer",
+  storageBucket:"cocupgradetimer.firebasestorage.app",
+  messagingSenderId:"737403193151",
+  appId:"1:737403193151:web:a81d2bc0edb2671d73758a"
+};
+
+const $=id=>document.getElementById(id),st=t=>{$('sys').textContent=t};
+const CK='coc-sync-code',DK='coc-sync-done';
+let db,unsub,code='',timer,first=false;
+const merge=(a,b)=>{const m={...b,accounts:{...(b.accounts||{})},names:{...(b.names||{}),...(a.names||{})},hist:{...(b.hist||{})}};
+  for(const [t,ac] of Object.entries(a.accounts||{})){const o=m.accounts[t];if(!o||(ac.exported||0)>(o.exported||0))m.accounts[t]=ac}
+  for(const [k,h] of Object.entries(a.hist||{})){const o=m.hist[k];m.hist[k]=o?{...h,...o,seen:!!(h.seen||o.seen)}:h}
+  m._rev=Date.now();return m};
+const push=()=>{if(!db||!code)return;setDoc(doc(db,'sync',code),{data:JSON.stringify(window.__getS()),updated:Date.now()}).then(()=>st('Synced '+new Date().toLocaleTimeString())).catch(e=>st('Could not save: '+(e.code||e.message)))};
+window.__sync=()=>{if(!db||!code)return;clearTimeout(timer);timer=setTimeout(push,600)};
+function connect(c){
+  c=c.trim();if(c.length<20){st('Code must be at least 20 characters.');return}
+  if(unsub)unsub();code=c;first=localStorage.getItem(DK)!==c;
+  try{localStorage.setItem(CK,c)}catch(e){}
+  st('Connecting\u2026');
+  unsub=onSnapshot(doc(db,'sync',code),snap=>{
+    const L=window.__getS();
+    if(!snap.exists()){push();try{localStorage.setItem(DK,code)}catch(e){}return}
+    const r=JSON.parse(snap.data().data);
+    if(first){first=false;try{localStorage.setItem(DK,code)}catch(e){}window.__apply(merge(L,r));push();st('Connected and merged '+new Date().toLocaleTimeString());return}
+    if((r._rev||0)>(L._rev||0)){window.__apply(r);st('Updated from cloud '+new Date().toLocaleTimeString())}
+    else if((r._rev||0)<(L._rev||0)){push()}
+    else st('Synced '+new Date().toLocaleTimeString());
+  },e=>st('Sync error: '+(e.code||e.message)+' (check your Firestore rules)'));
+}
+if(!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.startsWith('PASTE')){st('Setup needed: paste your Firebase config into the FIREBASE_CONFIG block in this file.');$('syb').disabled=true;$('syg').disabled=true}
+else{
+  db=getFirestore(initializeApp(FIREBASE_CONFIG));
+  $('syg').onclick=()=>{const a=new Uint8Array(24);crypto.getRandomValues(a);$('syc').value=[...a].map(x=>'abcdefghijkmnpqrstuvwxyz23456789'[x%32]).join('')};
+  $('syb').onclick=()=>connect($('syc').value);
+  let saved='';try{saved=localStorage.getItem(CK)||''}catch(e){}
+  if(saved){$('syc').value=saved;connect(saved)}else st('Not connected. Generate a code on one device, then enter the same code on the others.');
+}
+</script>
+</body>
+</html>
