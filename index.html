@@ -45,13 +45,59 @@ input.nm{font:inherit;background:transparent;color:var(--tx);border:1px solid va
 .card.min>:not(.head){display:none}.card.min .acts{display:none}.empty{color:var(--mu);text-align:center;padding:24px}
 .err{color:#c62828;margin-top:8px;font-size:13px}.form{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.form input,.form select{font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}.btn.pri{background:var(--ac);border-color:var(--ac);color:#fff}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+
+/* --- v2 clean UI --- */
+:root{--sh:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.05)}
+body{font-size:16px}
+.wrap{max-width:860px;padding:18px 14px 90px}
+h1{font-size:24px;letter-spacing:-.01em}
+.sub{margin:0 0 16px}
+.card{border-radius:16px;box-shadow:var(--sh);padding:16px}
+.btn{padding:8px 13px;min-height:38px;border-radius:10px}
+.tab{padding:9px 16px;min-height:40px}
+.tabs{margin:14px 0}
+.pill{font-size:12px;padding:2px 10px}
+summary{cursor:pointer;font-weight:600;list-style:none;min-height:30px;display:flex;align-items:center;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"\25BE";color:var(--mu)}
+details[open]>summary::after{content:"\25B4"}
+details.imp[open]>summary{margin-bottom:12px}
+details.set{margin-top:28px}
+details.set>summary{color:var(--mu);font-weight:600}
+.drop{padding:26px}
+.acts{flex-basis:100%;width:100%!important;margin-top:12px;padding-top:12px;border-top:1px dashed var(--bd);align-items:center}
+.acts::before{content:"Boosts";flex-basis:100%;font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
+.acts .btn.pri{background:color-mix(in srgb,var(--ac) 12%,var(--card));color:var(--ac);border-color:color-mix(in srgb,var(--ac) 35%,var(--bd))}
+.acts select{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+#rm{margin-left:auto;color:var(--mu)}
+.stats{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.stat{border-radius:12px;padding:12px}
+.stat .n{font-size:22px}
+.ulist{display:flex;flex-direction:column;gap:10px}
+.urow{display:flex;gap:14px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:14px;border:1px solid var(--bd);border-radius:14px;background:var(--card)}
+.umain{flex:1 1 220px;min-width:0}
+.uname{font-weight:600;font-size:16px;overflow-wrap:anywhere}
+.uacc{color:var(--ac);font-weight:700}
+.utags{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0}
+.uright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto}
+.ucd{font-size:22px;font-weight:700}
+.uact{display:flex;gap:6px}
+.urow .bar{width:100%;height:6px;margin-top:10px}
+.frow{cursor:pointer;flex-wrap:nowrap}
+.frow.unseen{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 8%,var(--card))}
+.frow.unseen .uname{font-weight:700}
+.bang{width:26px;text-align:center;color:var(--ac);font-weight:800;font-size:18px}
+input.nm[data-id]{border-style:dashed;border-color:var(--ac);width:100%;max-width:280px}
+.empty{padding:36px 12px;line-height:1.6}
+@media(max-width:560px){.uright{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%}.ucd{font-size:20px}.frow .uright{width:auto}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top"><div><h1>⚔️ CoC Upgrade Tracker</h1>
-  <p class="sub">Load the export file from Clash of Clans (Settings → More Settings → Data Export). Add as many accounts as you like.</p></div></div>
+  <p class="sub">Import your in-game export once per account, then log new upgrades as you start them.</p></div></div>
 
+  <details class="card imp" id="imp"><summary>＋ Add or update an account</summary>
   <label class="drop" id="drop">
     <input type="file" id="file" accept=".json,application/json,.txt" multiple hidden>
     <div>Drop export <b>.json</b> files here, or <b>click to choose</b> (multiple allowed)</div>
@@ -61,12 +107,13 @@ input.nm{font:inherit;background:transparent;color:var(--tx);border:1px solid va
     <input id="paste" placeholder="Paste export JSON here…" style="flex:1;font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)">
     <button class="btn" id="addPaste">Add</button>
   </div>
-  <div class="err" id="err"></div>
+  <div class="err" id="err"></div></details>
 
   <div class="tabs" id="tabs"></div>
   <div id="view"></div>
-  <div class="card" style="margin-top:24px"><b>Cloud sync</b><div class="meta">Use the same sync code on every device (PC, phone) and they stay in step automatically. Keep the code private: anyone with it can read and change your data.</div><div class="form"><input id="syc" placeholder="Sync code (20+ characters)" style="flex:1;min-width:220px"><button class="btn" id="syg">Generate code</button><button class="btn pri" id="syb">Connect</button></div><div class="meta" id="sys" style="margin-top:8px">Not connected.</div></div>
-  <div class="card" style="margin-top:24px"><b>Backup and restore</b><div class="meta">Everything is saved in this browser automatically. Moving to the standalone .html file or another device? Copy your backup here, then paste it into the same box there and press Restore.</div><div class="form"><button class="btn" id="bk">Show backup</button><button class="btn" id="dlb">Download backup file</button><button class="btn" id="rs">Restore from box</button></div><textarea id="bt" rows="4" style="width:100%;margin-top:8px;display:none;font:12px monospace;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px"></textarea><div class="meta" id="bm" style="margin-top:6px"></div></div>
+  <details class="set"><summary>⚙️ Sync &amp; backup</summary>
+  <div class="card" style="margin-top:12px"><b>Cloud sync</b><div class="meta">Use the same sync code on every device (PC, phone) and they stay in step automatically. Keep the code private: anyone with it can read and change your data.</div><div class="form"><input id="syc" placeholder="Sync code (20+ characters)" style="flex:1;min-width:220px"><button class="btn" id="syg">Generate code</button><button class="btn pri" id="syb">Connect</button></div><div class="meta" id="sys" style="margin-top:8px">Not connected.</div></div>
+  <div class="card" style="margin-top:24px"><b>Backup and restore</b><div class="meta">Everything is saved in this browser automatically. Moving to the standalone .html file or another device? Copy your backup here, then paste it into the same box there and press Restore.</div><div class="form"><button class="btn" id="bk">Show backup</button><button class="btn" id="dlb">Download backup file</button><button class="btn" id="rs">Restore from box</button></div><textarea id="bt" rows="4" style="width:100%;margin-top:8px;display:none;font:12px monospace;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px"></textarea><div class="meta" id="bm" style="margin-top:6px"></div></div></details>
 </div>
 
 <script>
@@ -91,7 +138,7 @@ if(P.fday!=='all')P.fday='today';
 const savePref=()=>{try{localStorage.setItem('coc-ui',JSON.stringify(P))}catch(e){}};
 const accOk=t=>!P.accSel||P.accSel.includes(t);
 const sod=()=>{const d=new Date();d.setHours(0,0,0,0);return +d},eod=()=>sod()+864e5-1;
-const FL=(list,now)=>list.filter(u=>(!S.hideDone||u.end>now)&&(P.fday==='all'||(u.end>=sod()&&u.end<=eod())));
+const FL=(list,now)=>list.filter(u=>u.end>=now-3*864e5&&(!S.hideDone||u.end>now)&&(P.fday==='all'||(u.end>=sod()&&u.end<=eod())));
 const KIND={buildings:'pot',heroes:'pot',units:'rpot',spells:'rpot',siege_machines:'rpot',pets:'ppot'};
 const PM={pot:{nm:'Builder potion',mult:10},rpot:{nm:'Research potion',mult:24},ppot:{nm:'Pet potion',mult:24},bite:{nm:'Builder Bite',mult:2},soup:{nm:'Study Soup',mult:4}};
 const HCD={app:24*36e5,lab:19*36e5},HN={app:'Builder\u2019s Apprentice',lab:'Lab Assistant'};
@@ -113,7 +160,7 @@ function eff(u,a){let T=u.start,W=(u.end0??u.end)-T;if(!(W>0))return u.end0??u.e
 const U=a=>[...a.ups,...(a.manual||[])].map(u=>{const b=u.end0??u.end,e=Math.round(eff(u,a));return {...u,end:e,end0:b,saved:b-e,helped:(a.potions||[]).some(p=>p.target&&p.target===(u.uid||u.id)&&p.end>Date.now())}});
 const fd=t=>{const d=new Date(t),n=new Date(),dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);return (dd===0?'Today':dd===1?'Tomorrow':dd===-1?'Yesterday':d.toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'}))+' · '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})};
 const LISTS={buildings:['Army Camp','Town Hall','Elixir Collector','Elixir Storage','Gold Mine','Gold Storage','Barracks','Laboratory','Cannon','Archer Tower','Wall','Wizard Tower','Air Defense','Mortar','Clan Castle','Builder’s Hut','Hidden Tesla','Spell Factory','X-Bow','Dark Elixir Drill','Dark Elixir Storage','Dark Barracks','Inferno Tower','Air Sweeper','Dark Spell Factory','Eagle Artillery','Bomb Tower','Workshop','B.O.B’s Hut','Scattershot','Pet House','Blacksmith','Hero Hall','Spell Tower','Monolith','Multi-Gear Tower','Sour Elixir Cauldron','Multi-Archer Tower','Ricochet Cannon','Revenge Tower','Firespitter','Helper Hut','Crafting Station','Super Wizard Tower'],heroes:['Barbarian King','Archer Queen','Minion Prince','Grand Warden','Royal Champion','Dragon Duke','Battle Machine','Battle Copter'],spells:['Lightning','Healing','Rage','Jump','Freeze','Clone','Invisibility','Recall','Revive','Totem','Poison','Earthquake','Haste','Skeleton','Bat','Overgrowth','Ice Block','Angry'].map(s=>s+' Spell'),pets:['L.A.S.S.I','Mighty Yak','Electro Owl','Unicorn','Phoenix','Poison Lizard','Diggy','Frosty','Spirit Fox','Angry Jelly','Sneezy','Greedy Raven']};
-function sync(){S.hist=S.hist||{};let ch=false;const now=Date.now();Object.values(S.accounts).forEach(a=>U(a).forEach(u=>{if(u.end>now)return;const k=a.tag+'|'+u.id+'|'+Math.round(u.end/6e4);if(!S.hist[k]){S.hist[k]={key:k,acc:a.tag,name:u.m?u.name:nameOf(u.id,u.sec),sec:u.sec,end:u.end,seen:false};ch=true}}));if(ch)save();return ch}
+function sync(){S.hist=S.hist||{};let ch=false;const now=Date.now(),cut=now-3*864e5;Object.values(S.accounts).forEach(a=>U(a).forEach(u=>{if(u.end>now||u.end<cut)return;const k=a.tag+'|'+u.id+'|'+Math.round(u.end/6e4);if(!S.hist[k]){S.hist[k]={key:k,acc:a.tag,name:u.m?u.name:nameOf(u.id,u.sec),sec:u.sec,end:u.end,seen:false};ch=true}}));for(const k of Object.keys(S.hist)){if(S.hist[k].end<cut){delete S.hist[k];ch=true}}if(ch)save();return ch}
 const dur=s=>{let t=0;String(s).replace(/(\d+(?:\.\d+)?)\s*(d|h|m|s)/gi,(_,n,u)=>{t+={d:864e5,h:36e5,m:6e4,s:1e3}[u.toLowerCase()]*n});return t};
 const nameOf=(id,sec)=>S.names[id]||N[id]||`${SEC[sec]||sec} #${id}`;
 
@@ -136,7 +183,7 @@ function parse(text,fname){
 function add(text,fname){try{const b=JSON.parse(text);if(b&&b.accounts&&!b.timestamp){restore(b);return}}catch(e){}
   const a=parse(text,fname), old=S.accounts[a.tag];
   if(old&&old.label)a.label=old.label;a.manual=((old&&old.manual)||[]).filter(m=>m.start>a.exported);
-  S.accounts[a.tag]=a; if(S.sel==='all'&&Object.keys(S.accounts).length===1)S.sel=a.tag; save(); render();
+  S.accounts[a.tag]=a; if(S.sel==='all'&&Object.keys(S.accounts).length===1)S.sel=a.tag; save(); render();{const d=document.getElementById('imp');if(d)d.open=false}
 }
 async function files(list){
   const err=document.getElementById('err');err.textContent='';
@@ -156,15 +203,19 @@ function fmt(ms){
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function rows(list,showAcc){
-  const now=Date.now();
-  if(!FL(list,now).length)return '<div class="empty">'+(P.fday==='today'?'Nothing finishes today. Switch the filter to All to see everything.':'Nothing to show.')+'</div>';
-  return `<div class="scroll"><table><thead><tr>${showAcc?'<th>Account</th>':''}<th>Upgrade</th><th>Type</th><th>Level</th><th>Time left</th><th>Finishes</th><th></th></tr></thead><tbody>`+
-  FL(list,now).map(u=>{const left=u.end-now,pct=Math.min(100,Math.max(0,(1-left/u.total)*100));
+  const now=Date.now(),L=FL(list,now);
+  if(!L.length)return '<div class="empty">'+(P.fday==='today'?'Nothing finishes today.<br>Switch the filter to <b>All</b> to see everything.':'Nothing to show.')+'</div>';
+  return '<div class="ulist">'+L.map(u=>{
+    const left=u.end-now,pct=Math.min(100,Math.max(0,(1-left/u.total)*100));
     const cls=left<=0?'done':left<3600e3?'soon':'';
     const unk=!(S.names[u.id]||N[u.id]);
-    return `<tr>${showAcc?`<td><b>${esc(u.acc)}</b>${u.acc!==u.tag?`<div class="meta">${esc(u.tag)}</div>`:''}</td>`:''}<td>${u.m?esc(u.name)+' <span class="pill">manual</span>'+(u.disc?' <span class="pill">−'+u.disc+'%</span>':''):unk?`<input class="nm" data-id="${u.id}" placeholder="Unknown ID ${u.id} – type a name" title="Type the name once; it is remembered">`:esc(nameOf(u.id,u.sec))}${u.cnt>1?` ×${u.cnt}`:''}</td><td><span class="pill">${esc(SEC[u.sec]||u.sec)}</span></td><td>${u.lvl==null?'—':u.lvl+' → '+(u.lvl+1)}</td>
-    <td><div class="cd ${cls}" data-end="${u.end}">${fmt(left)}</div><div class="bar"><i style="width:${pct}%"></i></div>${u.saved>6e4?` <span class="pill">⚗️ −${fmt(u.saved)}</span>`:''}${u.helped?' <span class="pill">helper working</span>':''}</td><td>${fd(u.end)}${u.saved>6e4?`<div class="meta">was ${fd(u.end0)}</div>`:''}</td><td style="white-space:nowrap">${(()=>{const k=hk(u),x=S.accounts[u.tag];return k&&left>0&&x&&hready(x,k,now)&&!u.helped?`<button class="btn" data-help="${k}" data-key="${esc(u.uid||u.id)}" data-acc="${esc(u.tag)}" title="Assign ${HN[k]}">${k==='app'?'🔨':'🧪'}</button> `:''})()}${u.m?`<button class="btn" title="Remove" data-del="${u.id}" data-acc="${esc(u.tag)}">✕</button>`:''}</td></tr>`}).join('')+`</tbody></table></div>`;
+    const name=u.m?esc(u.name):unk?`<input class="nm" data-id="${u.id}" placeholder="Unknown ID ${u.id} \u2013 type a name" title="Type the name once; it is remembered">`:esc(nameOf(u.id,u.sec));
+    const tags=[`<span class="pill">${esc(SEC[u.sec]||u.sec)}</span>`,u.lvl!=null?`<span class="pill">Lv ${u.lvl} \u2192 ${u.lvl+1}</span>`:'',u.m?'<span class="pill">manual</span>':'',u.disc?`<span class="pill">\u2212${u.disc}%</span>`:'',u.saved>6e4?`<span class="pill">\u2697\ufe0f \u2212${fmt(u.saved)}</span>`:'',u.helped?'<span class="pill">helper working</span>':''].join('');
+    const hb=(()=>{const k=hk(u),x=S.accounts[u.tag];return k&&left>0&&x&&hready(x,k,now)&&!u.helped?`<button class="btn" data-help="${k}" data-key="${esc(u.uid||u.id)}" data-acc="${esc(u.tag)}" title="Assign ${HN[k]}">${k==='app'?'\ud83d\udd28':'\ud83e\uddea'}</button>`:''})();
+    const del=u.m?`<button class="btn" title="Remove" data-del="${u.id}" data-acc="${esc(u.tag)}">\u2715</button>`:'';
+    return `<div class="urow"><div class="umain"><div class="uname">${showAcc?`<span class="uacc">${esc(u.acc)}</span> \u00b7 `:''}${name}${u.cnt>1?` \u00d7${u.cnt}`:''}</div><div class="utags">${tags}</div><div class="bar"><i style="width:${pct}%"></i></div></div><div class="uright"><div class="cd ucd ${cls}" data-end="${u.end}">${fmt(left)}</div><div class="meta">${fd(u.end)}${u.saved>6e4?` \u00b7 was ${fd(u.end0)}`:''}</div><div class="uact">${hb}${del}</div></div></div>`}).join('')+'</div>';
 }
+
 function render(){sync();
   const accs=Object.values(S.accounts), tabs=document.getElementById('tabs'), view=document.getElementById('view');
   if(!accs.length){tabs.innerHTML='';view.innerHTML='<div class="card empty">No accounts yet. Load an export file to start tracking.</div>';return}
@@ -179,7 +230,7 @@ function render(){sync();
       <div class="stats"><div class="stat"><div class="n">${all.filter(u=>u.end>now).length}</div><div class="l">Running</div></div>
       <div class="stat"><div class="n done">${hist.length}</div><div class="l">Finished (logged)</div></div>
       <div class="stat"><div class="n">${next?fmt(next.end-now):'—'}</div><div class="l">Next finishes${next?' ('+esc(next.acc)+')':''}</div></div></div></div>
-      ${accs.length>1?`<div class="tabs" style="margin:0 0 10px"><span class="meta" style="align-self:center">Accounts:</span>${accs.map(a=>`<button class="tab ${accOk(a.tag)?'on':''}" data-af="${esc(a.tag)}">${esc(a.label)}</button>`).join('')}${P.accSel?`<button class="btn" data-af="*">Show all</button>`:''}</div>`:''}<div class="tabs" style="margin:0 0 12px"><button class="tab ${S.allTab!=='fin'?'on':''}" data-at="run">Running<small>${all.length}</small></button><button class="tab ${S.allTab==='fin'?'on':''}" data-at="fin">Finished<small>${hist.length}</small>${unseen?`<small style="font-weight:700">!${unseen}</small>`:''}</button></div>${S.allTab==='fin'?'':`<div class="card">${all.length?rows(all,true):'<div class="empty">No active upgrades found in these files.</div>'}</div>`}${S.allTab!=='fin'?'':`<div class="card"><div class="head"><h2>Finished upgrades</h2>${unseen?`<button class="btn" id="seenall">Mark all as seen (${unseen})</button>`:''}</div>${hist.length?`<div class="scroll"><table><thead><tr><th></th><th>Account</th><th>Upgrade</th><th>Finished</th></tr></thead><tbody>${hist.slice(0,150).map(h=>`<tr data-seen="${esc(h.key)}" style="cursor:pointer;${h.seen?'':'font-weight:600'}"><td style="width:28px;color:var(--ac);font-weight:700">${h.seen?'':'!'}</td><td>${esc(S.accounts[h.acc]?.label||h.acc)}</td><td>${esc(h.name)} <span class="pill">${esc(SEC[h.sec]||h.sec)}</span></td><td>${new Date(h.end).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td></tr>`).join('')}</tbody></table></div><p class="meta">Rows with ! are new. Click a row to mark it seen.</p>`:'<div class="empty">Nothing has finished yet.</div>'}</div>`}`;
+      ${accs.length>1?`<div class="tabs" style="margin:0 0 10px"><span class="meta" style="align-self:center">Accounts:</span>${accs.map(a=>`<button class="tab ${accOk(a.tag)?'on':''}" data-af="${esc(a.tag)}">${esc(a.label)}</button>`).join('')}${P.accSel?`<button class="btn" data-af="*">Show all</button>`:''}</div>`:''}<div class="tabs" style="margin:0 0 12px"><button class="tab ${S.allTab!=='fin'?'on':''}" data-at="run">Running<small>${all.length}</small></button><button class="tab ${S.allTab==='fin'?'on':''}" data-at="fin">Finished<small>${hist.length}</small>${unseen?`<small style="font-weight:700">!${unseen}</small>`:''}</button></div>${S.allTab==='fin'?'':`<div class="card">${all.length?rows(all,true):'<div class="empty">No active upgrades found in these files.</div>'}</div>`}${S.allTab!=='fin'?'':`<div class="card"><div class="head"><h2>Finished upgrades</h2>${unseen?`<button class="btn" id="seenall">Mark all as seen (${unseen})</button>`:''}</div>${hist.length?`<div class="ulist">${hist.slice(0,150).map(h=>`<div class="urow frow ${h.seen?'':'unseen'}" data-seen="${esc(h.key)}"><div class="bang">${h.seen?'':'!'}</div><div class="umain"><div class="uname">${esc(h.name)}</div><div class="utags"><span class="pill">${esc(S.accounts[h.acc]?.label||h.acc)}</span><span class="pill">${esc(SEC[h.sec]||h.sec)}</span></div></div><div class="uright"><div class="meta">${fd(h.end)}</div></div></div>`).join('')}</div><p class="meta" style="margin-top:12px">Rows with ! are new \u2014 tap a row to mark it seen. Finished upgrades are removed automatically after 3 days.</p>`:'<div class="empty">Nothing finished in the last 3 days.</div>'}</div>`}`;
   }else{
     const a=S.accounts[S.sel], list=U(a).map(u=>({...u,tag:a.tag})).sort((x,y)=>x.end-y.end), run=list.filter(u=>u.end>now);
     view.innerHTML=`<div class="card${P.col&&P.col.head?' min':''}"><div class="head"><div><h2><input class="nm" id="lbl" value="${a.label===a.tag?'':esc(a.label)}" placeholder="Enter IGN" style="font-size:18px;font-weight:600;width:220px"> <button class="btn" data-col="head">${P.col&&P.col.head?'▸ Maximize':'▾ Minimize'}</button></h2>
@@ -229,7 +280,7 @@ const bt=document.getElementById('bt'),bm=document.getElementById('bm');
 document.getElementById('bk').onclick=()=>{bt.style.display='block';bt.value=JSON.stringify(S);bt.select();bm.textContent='Select all, copy this text, and paste it into the same box in your other copy, then press Restore.'};
 document.getElementById('dlb').onclick=()=>{try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='coc-tracker-backup.json';a.click();bm.textContent='If nothing downloaded (some embedded views block it), use Show backup instead. A backup file can be dropped into the import area to restore it.'}catch(e){bm.textContent='Download is blocked here. Use Show backup instead.'}};
 document.getElementById('rs').onclick=()=>{bt.style.display='block';const t=bt.value.trim();if(!t){bm.textContent='Paste your backup text in the box first, then press Restore.';return}try{const j=JSON.parse(t);if(!j.accounts)throw 0;restore(j);bm.textContent='Restored. Existing accounts with the same tag were replaced by the backup.'}catch(e){bm.textContent='That does not look like a backup.'}};
-render();
+render();document.getElementById('imp').open=!Object.keys(S.accounts).length;
 </script>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
